@@ -8,7 +8,7 @@ Functional of the package is setting 5 main methods bound database model:
 - put on /:id (updates instance and returns Entity);
 - delete on /:id (deletes instance and returns Entity);
 
-All methods allow query
+All methods allow query ([hans-sequelize-qs](https://www.npmjs.com/package/hans-sequelize-qs))
 
 ## Table of contents
 * [Installing](#installing)

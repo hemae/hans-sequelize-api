@@ -94,7 +94,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                 const pageLocal = +(page || 0) || 1
                 const entities = await self._postgreModels[modelName].findAndCountAll({
                     order: self._sort(sort),
-                    where: self._filter({filters, page, pageSize}),
+                    where: self._filter({filters}),
                     attributes: fields,
                     include: self._getRelationsInclude({relations, relationFields, relationFilters, relationSort}),
                     limit: pageSizeLocal,
@@ -114,21 +114,21 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         const self = this
         return async function (req: Request, res: Response): Promise<any> {
             try {
-
                 const {
-                    fields, relations, relationFields
+                    fields, relations, relationFields,
+                    relationFilters, relationSort
                 } = req.query as {
                     fields: string[], relations: PostgreModelName[]
                     relationFields: Record<PostgreModelName, string[]>
+                    relationFilters: Record<PostgreModelName, Filters>
+                    relationSort: Record<PostgreModelName, string>
                 }
-
                 const {id} = req.params
-
                 const entity = await self._postgreModels[modelName].findOne({
                     //@ts-ignore
                     where: {id},
                     attributes: fields,
-                    include: self._getRelationsInclude({relations, relationFields})
+                    include: self._getRelationsInclude({relations, relationFields, relationFilters, relationSort})
                 })
 
                 status200(res, entity || null)
@@ -172,17 +172,20 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         return async function (req: Request, res: Response): Promise<any> {
             try {
                 const {
-                    fields, relations, relationFields
+                    fields, relations, relationFields,
+                    relationFilters, relationSort
                 } = req.query as {
                     fields: string[], relations: PostgreModelName[]
                     relationFields: Record<PostgreModelName, string[]>
+                    relationFilters: Record<PostgreModelName, Filters>
+                    relationSort: Record<PostgreModelName, string>
                 }
                 const {id} = req.params
                 const entity = await self._postgreModels[modelName].findOne({
                     //@ts-ignore
                     where: {id},
                     attributes: fields,
-                    include: self._getRelationsInclude({relations, relationFields})
+                    include: self._getRelationsInclude({relations, relationFields, relationFilters, relationSort})
                 })
                 //@ts-ignore
                 if (entity) await self._postgreModels[modelName].destroy({where: {id}})
@@ -257,9 +260,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
     private _filter(options: FilterOptions): WhereOptions<any> | undefined {
 
         const {
-            filters,
-            page,
-            pageSize
+            filters
         } = options
 
         if (!filters) return undefined
