@@ -123,7 +123,7 @@ Default value of *page* is 1, *pageSize* is 10
 
 ## Fields
 
-If we want to get items only with specified object fields we should use *fields* operator and profide an array:
+If we want to get items only with specified object fields we should use *fields* operator and provide an array:
 
 ```
 ?fields[0]=title&fields[1]=description
@@ -218,13 +218,13 @@ By default we get all object fields in items.
 
 ## Filtering
 
-In this version you can use only first-level filtering.
+In this version we can use only first-level filtering.
 
-And we want to get only elements with *publicVisible*=true and title starting with "The".
+And we want to get only elements with *publicVisible*=true and *title* starting with "The".
 So we should provide following query parameters (using operator *and*):
 
 ```
-?filters[or][0][title][startsWith]=The&filters[or][1][publicVisible][eq]=true
+?filters[and][0][title][startsWith]=The&filters[or][1][publicVisible][eq]=true
 ```
 
 Then we get following response:
@@ -254,7 +254,7 @@ Then we get following response:
 To sort our items by id descending we should use query operator *sort*:
 
 ```
-?sort=id:asc
+?sort=id:desc
 ```
 
 Then we get:
