@@ -55,7 +55,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
             const possibleMethods: ExtendedMethod[] = options?.possibleMethods || self._extendedMethods
             const isAuth: ExtendedMethod[] = options?.auth || []
             const isAdmin: ExtendedMethod[] = options?.admin || []
-            const validation: { [method: string]: ValidationRules } = options?.validation || {}
+            const validation: Partial<Record<ExtendedMethod, ValidationRules>> = options?.validation || {}
             const additionalMiddlewares = options?.additionalMiddlewares
             const controllers = self._getApiControllers(modelName)
             self._extendedMethods.forEach((myMethod, index) => {
@@ -63,7 +63,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     const middlewares: Handler[] = []
                     if (isAuth.includes(myMethod)) middlewares.push(authMiddleware)
                     if (isAdmin.includes(myMethod)) middlewares.push(adminMiddleware)
-                    if (validation[myMethod]) middlewares.push(validationMiddleware(validation[index] as ValidationRules))
+                    if (validation[myMethod]) middlewares.push(validationMiddleware(validation[myMethod] as ValidationRules))
                     const additionalMiddleware = additionalMiddlewares?.find(middleware => middleware.method === myMethod)
                     if (additionalMiddleware) middlewares.push(additionalMiddleware.middleware)
                     const [method, path] = self._getMethodAndPath(myMethod)
