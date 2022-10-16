@@ -32,7 +32,7 @@ export type SetAPIOptions = {
     possibleMethods?: ExtendedMethod[]
     auth?: ExtendedMethod[]
     admin?: ExtendedMethod[]
-    validation?: {[method: string]: ValidationRules}
+    validation?: Partial<Record<ExtendedMethod, ValidationRules>>
     additionalMiddlewares?: {middleware: Handler, method: ExtendedMethod}[]
 } | void
 
