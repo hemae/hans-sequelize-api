@@ -28,12 +28,14 @@ export type InitializeAPIOptions = {
     validationMiddleware: (rules: ValidationRules) => Handler
 }
 
-export type SetAPIOptions = {
+export type SetAPIOptions<PostgreModelName extends string> = {
     possibleMethods?: ExtendedMethod[]
     auth?: ExtendedMethod[]
     admin?: ExtendedMethod[]
     validation?: Partial<Record<ExtendedMethod, ValidationRules>>
     additionalMiddlewares?: {middleware: Handler, method: ExtendedMethod}[]
+    defaultFields?: Partial<Record<ExtendedMethod, string[]>>
+    defaultRelationFields?: Record<PostgreModelName, string[]>
 } | void
 
 export type Sort = 'ASC' | 'DESC'
@@ -46,7 +48,7 @@ export type IncludeItem = {
 }
 
 export type GetRelationsIncludeOptions<PostgreModelName extends string> = {
-    relations: PostgreModelName[]
+    relations?: PostgreModelName[]
     relationFields?: Record<PostgreModelName, string[]>
     relationFilters?: Record<PostgreModelName, Filters>
     relationSort?: Record<PostgreModelName, string>
