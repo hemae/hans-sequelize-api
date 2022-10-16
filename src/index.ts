@@ -52,10 +52,10 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         const self = this
 
         return function setAPI(modelName: PostgreModelName, router: IRouter, options: SetAPIOptions): void {
-            const possibleMethods: ExtendedMethod[] = options?.possibleMethods || self._extendedMethods
-            const isAuth: ExtendedMethod[] = options?.auth || []
-            const isAdmin: ExtendedMethod[] = options?.admin || []
-            const validation: Partial<Record<ExtendedMethod, ValidationRules>> = options?.validation || {}
+            const possibleMethods = options?.possibleMethods || self._extendedMethods
+            const isAuth = options?.auth || []
+            const isAdmin = options?.admin || []
+            const validation = options?.validation || {}
             const additionalMiddlewares = options?.additionalMiddlewares
             const controllers = self._getApiControllers(modelName)
             self._extendedMethods.forEach((myMethod, index) => {
