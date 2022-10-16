@@ -1,4 +1,4 @@
-import {IRouter, Request, Response} from 'express'
+import {IRouter, Request, Response, Router} from 'express'
 import {
     Controllers,
     Method,
@@ -51,7 +51,8 @@ export default class SequelizeAPI<PostgreModelName extends string> {
 
         const self = this
 
-        return function setAPI(modelName: PostgreModelName, router: IRouter, options: SetAPIOptions): void {
+        return function setAPI(modelName: PostgreModelName, options: SetAPIOptions): IRouter {
+            const router = Router()
             const possibleMethods = options?.possibleMethods || self._extendedMethods
             const isAuth = options?.auth || []
             const isAdmin = options?.admin || []
@@ -70,6 +71,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     router[method](path, ...middlewares, controllers[myMethod])
                 }
             })
+            return router
         }
     }
 

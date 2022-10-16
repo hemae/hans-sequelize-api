@@ -61,7 +61,6 @@ export default setAPI
 In routes file (for example *users.routes.ts*)
 
 ```typescript
-import {Router} from 'express'
 import setAPI from 'any-init-api-file'
 
 
@@ -75,9 +74,7 @@ const updateUserRules = {
     email: 'email'
 }
 
-const router = Router()
-
-setAPI('User', router, {
+module.exports = setAPI('User', router, {
     possibleMethods: ['gets', 'post', 'put', 'delete'],
     auth: ['post', 'put'],
     admin: ['delete'],
@@ -86,8 +83,6 @@ setAPI('User', router, {
         {middleware: anyMiddleware, method: 'post'}
     ]
 })
-
-module.exports = router
 ```
 
 <a name="query-parameters"><h2>Query parameters</h2></a>
