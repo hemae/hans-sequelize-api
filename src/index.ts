@@ -218,7 +218,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                 const {id} = req.params
                 const entity = await self._postgreModels[modelName].findOne({
                     //@ts-ignore
-                    where: {id: updatedEntity.id},
+                    where: {id},
                     attributes: fields || defaultFields,
                     include: self._getRelationsInclude({relations, relationFields: relationFields || defaultRelationFields, relationFilters, relationSort})
                 })
