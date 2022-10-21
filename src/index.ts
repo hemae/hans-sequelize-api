@@ -159,7 +159,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                 const entity = await self._postgreModels[modelName].create(data)
                 const newEntity = await self._postgreModels[modelName].findOne({
                     //@ts-ignore
-                    where: {id: entity.id},
+                    where: {id: entity.getDataValue('id')},
                     attributes: fields || defaultFields,
                     include: self._getRelationsInclude({relations, relationFields: relationFields || defaultRelationFields, relationFilters, relationSort})
                 })
@@ -191,7 +191,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                 const updatedEntity = await entity?.update(data)
                 const newEntity = await self._postgreModels[modelName].findOne({
                     //@ts-ignore
-                    where: {id: updatedEntity.id},
+                    where: {id: updatedEntity.getDataValue('id')},
                     attributes: fields || defaultFields,
                     include: self._getRelationsInclude({relations, relationFields: relationFields || defaultRelationFields, relationFilters, relationSort})
                 })
