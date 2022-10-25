@@ -100,7 +100,12 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     order: self._sort(sort),
                     where: self._filter({filters}),
                     attributes: fields || defaultFields,
-                    include: self._getRelationsInclude({relations, relationFields: relationFields || defaultRelationFields, relationFilters, relationSort}),
+                    include: self._getRelationsInclude({
+                        relations,
+                        relationFields: relationFields || defaultRelationFields,
+                        relationFilters,
+                        relationSort
+                    }),
                     limit: pageSizeLocal,
                     offset: (pageLocal - 1) * pageSizeLocal
                 })
@@ -133,7 +138,12 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     //@ts-ignore
                     where: {id},
                     attributes: fields || defaultFields,
-                    include: self._getRelationsInclude({relations, relationFields: relationFields || defaultRelationFields, relationFilters, relationSort})
+                    include: self._getRelationsInclude({
+                        relations,
+                        relationFields: relationFields || defaultRelationFields,
+                        relationFilters,
+                        relationSort
+                    })
                 })
                 if (!entity) return error404(res)
                 status200(res, entity)
@@ -147,31 +157,46 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         const self = this
         return async function (req: Request, res: Response): Promise<any> {
             try {
+                const {query, body} = req
                 const {
                     fields, relations, relationFields,
                     relationFilters, relationSort
-                } = req.query as {
+                } = query as {
                     fields?: string[], relations: PostgreModelName[]
                     relationFields?: Record<PostgreModelName, string[]>
                     relationFilters?: Record<PostgreModelName, Filters>
                     relationSort?: Record<PostgreModelName, string>
                 }
-                const data = req.body
-                const entity = await self._postgreModels[modelName].create(data)
+                const entity = await self._postgreModels[modelName].create(body)
                 let newEntity
-                //@ts-ignore
-                console.log(entity.dataValues)
                 //@ts-ignore
                 if (entity.dataValues.id) {
                     newEntity = await self._postgreModels[modelName].findOne({
                         //@ts-ignore
                         where: {id: entity.dataValues.id},
                         attributes: fields || defaultFields,
-                        include: self._getRelationsInclude({relations, relationFields: relationFields || defaultRelationFields, relationFilters, relationSort})
+                        include: self._getRelationsInclude({
+                            relations,
+                            relationFields: relationFields || defaultRelationFields,
+                            relationFilters,
+                            relationSort
+                        })
+                    })
+                } else {
+                    delete body._userId
+                    delete body._role
+                    newEntity = await self._postgreModels[modelName].findOne({
+                        where: body,
+                        attributes: fields || defaultFields,
+                        include: self._getRelationsInclude({
+                            relations,
+                            relationFields: relationFields || defaultRelationFields,
+                            relationFilters,
+                            relationSort
+                        })
                     })
                 }
-                //@ts-ignore
-                status201(res, entity.getDataValue('id') ? newEntity : entity.dataValues)
+                status201(res, newEntity)
             } catch (e: any) {
                 error500('api post entity', res, e, __filename)
             }
@@ -182,23 +207,23 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         const self = this
         return async function (req: Request, res: Response): Promise<any> {
             try {
+                const {query, body, params} = req
                 const {
                     fields, relations, relationFields,
                     relationFilters, relationSort
-                } = req.query as {
+                } = query as {
                     fields?: string[], relations: PostgreModelName[]
                     relationFields?: Record<PostgreModelName, string[]>
                     relationFilters?: Record<PostgreModelName, Filters>
                     relationSort?: Record<PostgreModelName, string>
                 }
-                const {id} = req.params
-                const data = req.body
+                const {id} = params
                 //@ts-ignore
                 const entity = await self._postgreModels[modelName].findOne({where: {id}})
                 if (!entity) return error404(res)
-                const updatedEntity = await entity?.update(data)
+                const updatedEntity = await entity?.update(body)
                 let newEntity
-                if (updatedEntity?.getDataValue('id')) {
+                if (updatedEntity.getDataValue('id')) {
                     newEntity = await self._postgreModels[modelName].findOne({
                         //@ts-ignore
                         where: {id: updatedEntity.getDataValue('id')},
@@ -210,9 +235,21 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                             relationSort
                         })
                     })
+                } else {
+                    delete body._userId
+                    delete body._role
+                    newEntity = await self._postgreModels[modelName].findOne({
+                        where: body,
+                        attributes: fields || defaultFields,
+                        include: self._getRelationsInclude({
+                            relations,
+                            relationFields: relationFields || defaultRelationFields,
+                            relationFilters,
+                            relationSort
+                        })
+                    })
                 }
-                //@ts-ignore
-                status200(res, updatedEntity?.getDataValue('id') ? newEntity : updatedEntity)
+                status200(res, newEntity)
             } catch (e: any) {
                 error500('api put entity', res, e, __filename)
             }
@@ -237,7 +274,12 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     //@ts-ignore
                     where: {id},
                     attributes: fields || defaultFields,
-                    include: self._getRelationsInclude({relations, relationFields: relationFields || defaultRelationFields, relationFilters, relationSort})
+                    include: self._getRelationsInclude({
+                        relations,
+                        relationFields: relationFields || defaultRelationFields,
+                        relationFilters,
+                        relationSort
+                    })
                 })
                 if (!entity) return error404(res)
                 //@ts-ignore
