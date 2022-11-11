@@ -3,7 +3,7 @@ import {Model, ModelCtor, ModelStatic, WhereOptions} from 'sequelize'
 
 
 export type Handler = (req: Request, res: Response, next?: NextFunction) => Promise<any>
-export type Controller = (req: Request, res: Response, next?: NextFunction) => Promise<void>
+export type Controller = (req: Request, res: Response, next: NextFunction) => Promise<void>
 
 export type Method =
     'get'

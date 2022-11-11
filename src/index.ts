@@ -61,7 +61,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
             const afterMethods = options?.afterMethods
             const defaultFields = options?.defaultFields
             const defaultRelationFields = options?.defaultRelationFields
-            const controllers = self._getApiControllers(modelName, this._mapIsAfterMethods(afterMethods), defaultFields, defaultRelationFields)
+            const controllers = self._getApiControllers(modelName, self._mapIsAfterMethods(afterMethods), defaultFields, defaultRelationFields)
             self._extendedMethods.forEach((myMethod, index) => {
                 if (possibleMethods.includes(myMethod)) {
                     const middlewares: Handler[] = []
@@ -72,9 +72,9 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     if (additionalMiddleware) middlewares.push(additionalMiddleware.middleware)
                     const [method, path] = self._getMethodAndPath(myMethod)
                     let afterMethodsForAdd: Handler[] = []
-                    if (afterMethods[myMethod]) {
-                        if (Array.isArray(afterMethods[myMethod])) afterMethodsForAdd = afterMethods[myMethod]
-                        else afterMethodsForAdd = [afterMethods[myMethod]]
+                    if (afterMethods && afterMethods[myMethod]) {
+                        if (Array.isArray(afterMethods[myMethod])) afterMethodsForAdd = afterMethods[myMethod] as Handler[]
+                        else afterMethodsForAdd = [afterMethods[myMethod] as Handler]
                     }
                     router[method](path, ...middlewares, controllers[myMethod], ...afterMethodsForAdd)
                 }
@@ -83,10 +83,13 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         }
     }
 
-    private _mapIsAfterMethods(afterMethods: Partial<Record<ExtendedMethod, Handler | Handler[]>>): Record<ExtendedMethod, boolean> {
-        let isAfterMethods: Partial<Record<ExtendedMethod, boolean>> = {}
-        this._extendedMethods.forEach(method => isAfterMethods[method] = !!afterMethods[method])
-        return isAfterMethods as Record<ExtendedMethod, boolean>
+    private _mapIsAfterMethods(afterMethods: Partial<Record<ExtendedMethod, Handler | Handler[]>> | undefined): Record<ExtendedMethod, boolean> {
+        if (afterMethods) {
+            let isAfterMethods: Partial<Record<ExtendedMethod, boolean>> = {}
+            this._extendedMethods.forEach(method => isAfterMethods[method] = !!afterMethods[method])
+            return isAfterMethods as Record<ExtendedMethod, boolean>
+        }
+        return {gets: false, get: false, post: false, put: false, delete: false}
     }
 
     private _getEntities(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
