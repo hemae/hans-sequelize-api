@@ -1,6 +1,6 @@
 {
   "name": "hans-sequelize-api",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "rest-api form sequelize-express stack",
   "main": "lib/index.js",
   "scripts": {
