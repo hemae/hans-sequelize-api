@@ -1,4 +1,4 @@
-import {IRouter, Request, Response, Router} from 'express'
+import {IRouter, NextFunction, Request, Response, Router} from 'express'
 import {
     Controllers,
     Method,
@@ -58,9 +58,10 @@ export default class SequelizeAPI<PostgreModelName extends string> {
             const isAdmin = options?.admin || []
             const validation = options?.validation || {}
             const additionalMiddlewares = options?.additionalMiddlewares
+            const afterMethods = options?.afterMethods
             const defaultFields = options?.defaultFields
             const defaultRelationFields = options?.defaultRelationFields
-            const controllers = self._getApiControllers(modelName, defaultFields, defaultRelationFields)
+            const controllers = self._getApiControllers(modelName, this._mapIsAfterMethods(afterMethods), defaultFields, defaultRelationFields)
             self._extendedMethods.forEach((myMethod, index) => {
                 if (possibleMethods.includes(myMethod)) {
                     const middlewares: Handler[] = []
@@ -70,16 +71,27 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     const additionalMiddleware = additionalMiddlewares?.find(middleware => middleware.method === myMethod)
                     if (additionalMiddleware) middlewares.push(additionalMiddleware.middleware)
                     const [method, path] = self._getMethodAndPath(myMethod)
-                    router[method](path, ...middlewares, controllers[myMethod])
+                    let afterMethodsForAdd: Handler[] = []
+                    if (afterMethods[myMethod]) {
+                        if (Array.isArray(afterMethods[myMethod])) afterMethodsForAdd = afterMethods[myMethod]
+                        else afterMethodsForAdd = [afterMethods[myMethod]]
+                    }
+                    router[method](path, ...middlewares, controllers[myMethod], ...afterMethodsForAdd)
                 }
             })
             return router
         }
     }
 
-    private _getEntities(modelName: PostgreModelName, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _mapIsAfterMethods(afterMethods: Partial<Record<ExtendedMethod, Handler | Handler[]>>): Record<ExtendedMethod, boolean> {
+        let isAfterMethods: Partial<Record<ExtendedMethod, boolean>> = {}
+        this._extendedMethods.forEach(method => isAfterMethods[method] = !!afterMethods[method])
+        return isAfterMethods as Record<ExtendedMethod, boolean>
+    }
+
+    private _getEntities(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
         const self = this
-        return async function (req: Request, res: Response): Promise<any> {
+        return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
                 const {
                     filters, sort, page,
@@ -114,15 +126,16 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     data: entities.rows,
                     meta: {page: pageLocal, pageSize: pageSizeLocal, pageCount, total: entities.count}
                 })
+                if (isAfterMethod) next()
             } catch (e: any) {
                 error500('api get entities', res, e, __filename)
             }
         }
     }
 
-    private _getEntity(modelName: PostgreModelName, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _getEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
         const self = this
-        return async function (req: Request, res: Response): Promise<any> {
+        return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
                 const {
                     fields, relations, relationFields,
@@ -147,15 +160,16 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                 })
                 if (!entity) return error404(res)
                 status200(res, entity)
+                if (isAfterMethod) next()
             } catch (e: any) {
                 error500('api get entity', res, e, __filename)
             }
         }
     }
 
-    private _postEntity(modelName: PostgreModelName, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _postEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
         const self = this
-        return async function (req: Request, res: Response): Promise<any> {
+        return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
                 const {query, body} = req
                 const {
@@ -197,15 +211,16 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     })
                 }
                 status201(res, newEntity)
+                if (isAfterMethod) next()
             } catch (e: any) {
                 error500('api post entity', res, e, __filename)
             }
         }
     }
 
-    private _putEntity(modelName: PostgreModelName, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _putEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
         const self = this
-        return async function (req: Request, res: Response): Promise<any> {
+        return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
                 const {query, body, params} = req
                 const {
@@ -250,15 +265,16 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                     })
                 }
                 status200(res, newEntity)
+                if (isAfterMethod) next()
             } catch (e: any) {
                 error500('api put entity', res, e, __filename)
             }
         }
     }
 
-    private _deleteEntity(modelName: PostgreModelName, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _deleteEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
         const self = this
-        return async function (req: Request, res: Response): Promise<any> {
+        return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
                 const {
                     fields, relations, relationFields,
@@ -285,6 +301,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
                 //@ts-ignore
                 if (entity) await self._postgreModels[modelName].destroy({where: {id}})
                 status200(res, entity)
+                if (isAfterMethod) next()
             } catch (e: any) {
                 error500('api delete entity', res, e, __filename)
             }
@@ -318,13 +335,13 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         return [method, path]
     }
 
-    private _getApiControllers(modelName: PostgreModelName, defaultFields?: Partial<Record<ExtendedMethod, string[]>>, defaultRelationFields?: Record<PostgreModelName, string[]>): Controllers {
+    private _getApiControllers(modelName: PostgreModelName, isAfterMethods: Record<ExtendedMethod, boolean>, defaultFields?: Partial<Record<ExtendedMethod, string[]>>, defaultRelationFields?: Record<PostgreModelName, string[]>): Controllers {
         return {
-            gets: this._getEntities(modelName, defaultFields?.gets, defaultRelationFields),
-            get: this._getEntity(modelName, defaultFields?.get, defaultRelationFields),
-            post: this._postEntity(modelName, defaultFields?.post, defaultRelationFields),
-            put: this._putEntity(modelName, defaultFields?.put, defaultRelationFields),
-            delete: this._deleteEntity(modelName, defaultFields?.delete, defaultRelationFields)
+            gets: this._getEntities(modelName, isAfterMethods.gets, defaultFields?.gets, defaultRelationFields),
+            get: this._getEntity(modelName, isAfterMethods.get, defaultFields?.get, defaultRelationFields),
+            post: this._postEntity(modelName, isAfterMethods.post, defaultFields?.post, defaultRelationFields),
+            put: this._putEntity(modelName, isAfterMethods.put, defaultFields?.put, defaultRelationFields),
+            delete: this._deleteEntity(modelName, isAfterMethods.delete, defaultFields?.delete, defaultRelationFields)
         }
     }
 

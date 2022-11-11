@@ -36,6 +36,7 @@ export type SetAPIOptions<PostgreModelName extends string> = {
     additionalMiddlewares?: {middleware: Handler, method: ExtendedMethod}[]
     defaultFields?: Partial<Record<ExtendedMethod, string[]>>
     defaultRelationFields?: Record<PostgreModelName, string[]>
+    afterMethods?: Partial<Record<ExtendedMethod, Handler | Handler[]>>
 } | void
 
 export type Sort = 'ASC' | 'DESC'
