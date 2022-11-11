@@ -92,7 +92,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         return {gets: false, get: false, post: false, put: false, delete: false}
     }
 
-    private _getEntities(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _getEntities(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Partial<Record<PostgreModelName, string[]>>) {
         const self = this
         return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
@@ -136,7 +136,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         }
     }
 
-    private _getEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _getEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Partial<Record<PostgreModelName, string[]>>) {
         const self = this
         return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
@@ -170,7 +170,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         }
     }
 
-    private _postEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _postEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Partial<Record<PostgreModelName, string[]>>) {
         const self = this
         return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
@@ -221,7 +221,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         }
     }
 
-    private _putEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _putEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Partial<Record<PostgreModelName, string[]>>) {
         const self = this
         return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
@@ -275,7 +275,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         }
     }
 
-    private _deleteEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Record<PostgreModelName, string[]>) {
+    private _deleteEntity(modelName: PostgreModelName, isAfterMethod: boolean, defaultFields?: string[], defaultRelationFields?: Partial<Record<PostgreModelName, string[]>>) {
         const self = this
         return async function (req: Request, res: Response, next: NextFunction): Promise<any> {
             try {
@@ -338,7 +338,7 @@ export default class SequelizeAPI<PostgreModelName extends string> {
         return [method, path]
     }
 
-    private _getApiControllers(modelName: PostgreModelName, isAfterMethods: Record<ExtendedMethod, boolean>, defaultFields?: Partial<Record<ExtendedMethod, string[]>>, defaultRelationFields?: Record<PostgreModelName, string[]>): Controllers {
+    private _getApiControllers(modelName: PostgreModelName, isAfterMethods: Record<ExtendedMethod, boolean>, defaultFields?: Partial<Record<ExtendedMethod, string[]>>, defaultRelationFields?: Partial<Record<PostgreModelName, string[]>>): Controllers {
         return {
             gets: this._getEntities(modelName, isAfterMethods.gets, defaultFields?.gets, defaultRelationFields),
             get: this._getEntity(modelName, isAfterMethods.get, defaultFields?.get, defaultRelationFields),

@@ -50,9 +50,9 @@ export type IncludeItem = {
 
 export type GetRelationsIncludeOptions<PostgreModelName extends string> = {
     relations?: PostgreModelName[]
-    relationFields?: Record<PostgreModelName, string[]>
-    relationFilters?: Record<PostgreModelName, Filters>
-    relationSort?: Record<PostgreModelName, string>
+    relationFields?: Partial<Record<PostgreModelName, string[]>>
+    relationFilters?: Partial<Record<PostgreModelName, Filters>>
+    relationSort?: Partial<Record<PostgreModelName, string>>
 }
 
 export type PostgreModel<ModelType extends Model = Model> = ModelCtor<ModelType>
