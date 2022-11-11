@@ -35,7 +35,7 @@ export type SetAPIOptions<PostgreModelName extends string> = {
     validation?: Partial<Record<ExtendedMethod, ValidationRules>>
     additionalMiddlewares?: {middleware: Handler, method: ExtendedMethod}[]
     defaultFields?: Partial<Record<ExtendedMethod, string[]>>
-    defaultRelationFields?: Record<PostgreModelName, string[]>
+    defaultRelationFields?: Partial<Record<PostgreModelName, string[]>>
     afterMethods?: Partial<Record<ExtendedMethod, Handler | Handler[]>>
 } | void
 
